@@ -1,28 +1,66 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <h3>掲示板に投稿する</h3>
+    <label for="name">ニックネーム</label>
+    <input type="text" name="" id="name" v-model="name">
+    <br>
+    <label for="comment">コメント</label>
+    <textarea name="" id="comment" v-model="comment"></textarea>
+    <br>
+    <button @click="createComment">コメントをサーバーに送る</button>
+    <br>
+    <h2>掲示板</h2>
+    <div v-for="post in posts" :key="post.name">
+      <div>名前：{{ post.fields.name.stringValue }}</div>
+      <div>コメント：{{ post.fields.comment.stringValue }}</div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from './axios-auth';
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      name: '',
+      comment: '',
+      posts: []
+    }
+  },
+  created() {
+    axios.get(
+      '/comments'
+    )
+    .then(response => {
+      this.posts = response.data.documents
+    })
+    .catch(error => { error });
+  },
+  methods: {
+    createComment() {
+      axios.post(
+        '/comments',
+        {
+          fields: {
+            name: {
+              stringValue: this.name
+            },
+            comment: {
+              stringValue: this.comment
+            }
+          }
+        }
+      );
+      this.name = '';
+      this.comment = '';
+    }
   }
 }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style scoped>
+ label, input, textarea {
+   display: block;
+ }
 </style>
