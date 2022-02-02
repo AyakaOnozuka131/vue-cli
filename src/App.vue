@@ -1,66 +1,39 @@
 <template>
-  <div>
-    <h3>掲示板に投稿する</h3>
-    <label for="name">ニックネーム</label>
-    <input type="text" name="" id="name" v-model="name">
-    <br>
-    <label for="comment">コメント</label>
-    <textarea name="" id="comment" v-model="comment"></textarea>
-    <br>
-    <button @click="createComment">コメントをサーバーに送る</button>
-    <br>
-    <h2>掲示板</h2>
-    <div v-for="post in posts" :key="post.name">
-      <div>名前：{{ post.fields.name.stringValue }}</div>
-      <div>コメント：{{ post.fields.comment.stringValue }}</div>
-    </div>
+  <div id="app">
+    <header>
+      <template v-if="isAuthenticated">
+        <router-link to="/" class="header-item">掲示板</router-link>
+        <span class="header-item" @click="logout">ログアウト</span>
+      </template>
+      <template v-if="!isAuthenticated">
+        <router-link to="/login" class="header-item">ログイン</router-link>
+        <router-link to="/register" class="header-item">登録</router-link>
+      </template>
+    </header>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import axios from './axios-auth';
-
 export default {
-  data() {
-    return {
-      name: '',
-      comment: '',
-      posts: []
+  computed: {
+    isAuthenticated() {
+      return this.$store.getters.idToken != null;
     }
   },
-  created() {
-    axios.get(
-      '/comments'
-    )
-    .then(response => {
-      this.posts = response.data.documents
-    })
-    .catch(error => { error });
-  },
   methods: {
-    createComment() {
-      axios.post(
-        '/comments',
-        {
-          fields: {
-            name: {
-              stringValue: this.name
-            },
-            comment: {
-              stringValue: this.comment
-            }
-          }
-        }
-      );
-      this.name = '';
-      this.comment = '';
+    logout() {
+      this.$store.dispatch('logout');
     }
   }
 }
 </script>
 
 <style scoped>
- label, input, textarea {
-   display: block;
- }
+  .header-item{
+    padding: 10px;
+  }
+  span.header-item{
+    cursor: pointer;
+  }
 </style>
